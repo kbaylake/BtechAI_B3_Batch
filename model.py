@@ -1,3 +1,5 @@
+import pandas as pd
+from transformers import AutoTokenizer
 from transformers import AutoModelForQuestionAnswering, Trainer, TrainingArguments
 
 class Model:
@@ -17,6 +19,7 @@ class Model:
 
         # Load a pre-trained QA model
         self.model = AutoModelForQuestionAnswering.from_pretrained(model_name)
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         # Define training arguments (Team 4 can edit these hyperparameters)
         self.training_args = TrainingArguments(
@@ -28,6 +31,19 @@ class Model:
             num_train_epochs=3,
             weight_decay=0.01
         )
+    
+    # Function for reading the data from csv
+    def data_reader(self):
+        data = pd.read_csv("processed_data.csv")
+        data = data.dropna()
+
+        questions = [q.strip() for q in data["processed_question"]]
+
+        inputs = self.tokenizer(
+            questions, data["processed_answer_text"].tolist(), max_length=384, truncation=True, padding="max_length", return_tensors="pt"
+        )
+
+        return inputs
 
     def train_model(self, tokenized_train, tokenized_valid):
     # Initialize Trainer
@@ -41,3 +57,11 @@ class Model:
         # Train the model
         trainer.train()
         return trainer # this returned object has to be used for predicting on validation or test data.
+
+"""
+Notes for the next team: 
+- call the data_reader function to get tokenised data for train and validation
+- next u can call the train_model function for making the training happen.
+- do split the data into train and validation.
+- for the model training team (team 4), finding the optimal value for hyper parameters is the main goal
+"""
