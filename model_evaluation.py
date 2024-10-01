@@ -113,6 +113,24 @@ class Model:
         
         return {"Exact Match": em, "F1 Score": f1}
     
+    
+    def compute_f1(self, start_preds, end_preds, start_labels, end_labels):
+        """Calculate F1 score between predicted and true positions."""
+        f1_scores = []
+        for i in range(len(start_labels)):
+            pred_range = set(range(start_preds[i], end_preds[i] + 1))
+            true_range = set(range(start_labels[i], end_labels[i] + 1))
+            
+            common_tokens = pred_range.intersection(true_range)
+            if len(common_tokens) == 0:
+                f1_scores.append(0)
+            else:
+                precision = len(common_tokens) / len(pred_range)
+                recall = len(common_tokens) / len(true_range)
+                f1 = 2 * (precision * recall) / (precision + recall)
+                f1_scores.append(f1)
+        return np.mean(f1_scores)
+    
 
 
 
