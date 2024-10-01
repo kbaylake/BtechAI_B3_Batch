@@ -113,6 +113,19 @@ class Model:
         
         return {"Exact Match": em, "F1 Score": f1}
     
+
+    # predict function
+    def predict(self, dataset):
+        trainer = Trainer(model=self.model, args=self.training_args)
+        predictions = trainer.predict(dataset)
+        return predictions.predictions, dataset
+
+    # exact_match function
+    def exact_match(self, start_preds, end_preds, start_labels, end_labels):
+        """Calculate exact match (EM) score."""
+        em_score = (start_preds == start_labels) & (end_preds == end_labels)
+        return np.mean(em_score)
+    
     
     def compute_f1(self, start_preds, end_preds, start_labels, end_labels):
         """Calculate F1 score between predicted and true positions."""
@@ -134,15 +147,6 @@ class Model:
 
 
 
-    # predict function
-   
-
-    # exact_match function
-   
-
-
-
-    # compute_f1 function
 
 
 
