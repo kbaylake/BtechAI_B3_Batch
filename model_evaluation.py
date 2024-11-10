@@ -5,6 +5,7 @@ import pandas as pd
 import torch
 import numpy as np
 from datasets import Dataset
+import pickle  # Importing pickle to save the model
 
 class Model:
     def __init__(self, model_name="bert-base-uncased", epochs=3):
@@ -25,7 +26,7 @@ class Model:
         )
 
     def data_reader(self):
-        data = pd.read_csv("BtechAI_B3_Batch/processed_data.csv")
+        data = pd.read_csv("processed_data.csv")
         data = data.dropna()
         questions = [q.strip() for q in data["processed_question"]]
         answers = data["processed_answer_text"].tolist()
@@ -91,11 +92,15 @@ class Model:
         eval_metrics = trainer.evaluate()
         print(f"Evaluation metrics: {eval_metrics}")
         
+        self.save_model()  # Save the model after training
+        
         return trainer, eval_metrics
-    
 
-
-
+    def save_model(self):
+        # Save the model to a pickle file
+        with open("trained_model.pkl", "wb") as f:
+            pickle.dump(self.model, f)
+        print("Model saved as 'trained_model.pkl'")
 
     def evaluate_model(self, val_dataset):
         predictions, labels = self.predict(val_dataset)
@@ -112,23 +117,17 @@ class Model:
         print(f"F1 Score: {f1}")
         
         return {"Exact Match": em, "F1 Score": f1}
-    
 
-    # predict function
     def predict(self, dataset):
         trainer = Trainer(model=self.model, args=self.training_args)
         predictions = trainer.predict(dataset)
         return predictions.predictions, dataset
 
-    # exact_match function
     def exact_match(self, start_preds, end_preds, start_labels, end_labels):
-        """Calculate exact match (EM) score."""
         em_score = (start_preds == start_labels) & (end_preds == end_labels)
         return np.mean(em_score)
     
-    
     def compute_f1(self, start_preds, end_preds, start_labels, end_labels):
-        """Calculate F1 score between predicted and true positions."""
         f1_scores = []
         for i in range(len(start_labels)):
             pred_range = set(range(start_preds[i], end_preds[i] + 1))
@@ -143,12 +142,6 @@ class Model:
                 f1 = 2 * (precision * recall) / (precision + recall)
                 f1_scores.append(f1)
         return np.mean(f1_scores)
-    
-
-
-
-
-
 
 # Example usage:
 qa_model = Model(epochs=3)
