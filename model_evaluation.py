@@ -99,7 +99,7 @@ class Model:
     def save_model(self):
         # Save the model to a pickle file
         with open("trained_model.pkl", "wb") as f:
-            pickle.dump(self.model, f)
+            pickle.dump(self.model, f) #Saved pickle model
         print("Model saved as 'trained_model.pkl'")
 
     def evaluate_model(self, val_dataset):
